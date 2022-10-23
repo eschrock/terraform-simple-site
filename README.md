@@ -22,4 +22,7 @@ It will then configure:
 
  ## Inputs
 
-  * 
+  * `domain_name` - Required. Fully qualified domain name for the site
+  * `zone_id` - Required. Route53 zone ID within which to create DNS records
+  * `enable_data` - If set to true, then create a separate S3 bucket and map /data ot it
+  * `enable_api` - If set to true, then create an HTTP API gateway mapped to /api
