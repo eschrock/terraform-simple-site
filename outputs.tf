@@ -3,7 +3,7 @@ output "s3_bucket_logs" {
 }
 
 output "s3_bucket_site" {
-  value = var.enable_site ? aws_s3_bucket.site[0].bucket : null
+  value = aws_s3_bucket.site.bucket
 }
 
 output "s3_bucket_data" {

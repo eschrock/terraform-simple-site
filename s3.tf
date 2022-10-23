@@ -3,7 +3,7 @@
 # configured by this module:
 #
 #   <domain>-web-logs   Always configured for Cloudfront logs
-#   <domain>-web-site   If enable_site is set, then default static assets are served from here
+#   <domain>-web-site   Default static assets are served from here
 #   <domain>-web-data   If enable_data is set, then /data assets are served from here
 #
 # Every bucket is configured to be private with server side encryption. Access is then explicitly
@@ -40,19 +40,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
 
 # Static site bucket
 resource "aws_s3_bucket" "site" {
-    count  = var.enable_site ? 1 : 0
     bucket = "${var.domain_name}-web-site"
 }
 
 resource "aws_s3_bucket_acl" "site" {
-    count  = var.enable_site ? 1 : 0
-    bucket = aws_s3_bucket.site[count.index].bucket
+    bucket = aws_s3_bucket.site.bucket
     acl    = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "site" {
-    count                   = var.enable_site ? 1 : 0
-    bucket                  = aws_s3_bucket.site[count.index].bucket
+    bucket                  = aws_s3_bucket.site.bucket
     block_public_acls       = true
     block_public_policy     = true
     ignore_public_acls      = true
@@ -60,8 +57,7 @@ resource "aws_s3_bucket_public_access_block" "site" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
-    count  = var.enable_site ? 1 : 0
-    bucket = aws_s3_bucket.site[count.index].bucket
+    bucket = aws_s3_bucket.site.bucket
     rule {
         apply_server_side_encryption_by_default {
             sse_algorithm = "AES256"
@@ -70,8 +66,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
 }
 
 resource "aws_s3_bucket_website_configuration" "site" {
-    count  = var.enable_site ? 1 : 0
-    bucket  = aws_s3_bucket.site[count.index].bucket
+    bucket  = aws_s3_bucket.site.bucket
 
     index_document {
         suffix = "index.html"
