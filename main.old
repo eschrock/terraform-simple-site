@@ -44,32 +44,3 @@ resource "aws_cloudfront_distribution" "web" {
     }
 
 }
-
-# Configure DNS and SSL for the site. We create a DNS record within an existing Route 53 zone. In the future, the full
-# zone should be created and managed within this infrastructure. But for now, we're sharing an existing Route 53 zone.
-
-# Because we have a client-side single-page app, explicitly requesting a page like "/Foo" will look for a file named
-# "Foo" in our S3 bucket, even though that is a route interpreted on the client side. This results in a 404 error.data 
-# To work around this, we want to translate routes into /index.html requests, but only for static (non-API) content.data
-# We therefore can't use the built-in CloudFront error translation, because that would also convert our 404 errors from
-# the API. Instead, we have to use a Lambda@Edge function to do the translation dynamically only for the static
-# origin. Because this is effectively a piece of the infratsructure (and not a separate logical bit of software), we
-# deploy the lambda from this repo.
-module "lambda_error_rewrite" {
-  source    = "terraform-aws-modules/lambda/aws"
-  version   = "~> 2.0"
-
-  function_name = "${var.deployment_name}-error-rewrite"
-  description   = "Rewrite client-side routes for static content"
-  handler = "rewrite.handler"
-  runtime = "nodejs16.x"
-
-  source_path = "spa-rewrite"
-
-  lambda_at_edge = true
-
-  store_on_s3 = true
-  s3_bucket = module.s3_bucket_api.s3_bucket_id
-  s3_prefix = "lambda"
-
-}

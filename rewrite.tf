@@ -4,16 +4,16 @@
 # We therefore can't use the built-in CloudFront error translation, because that would also convert our 404 errors from
 # the API. Instead, we have to use a Lambda@Edge function to do the translation dynamically anything that doesn't
 # have a "." in its name (e.g. index.html, image.png, etc).
-module "lambda_error_rewrite" {
+module "lambda_rewrite" {
   source    = "terraform-aws-modules/lambda/aws"
   version   = "~> 2.0"
 
-  function_name = "${var.domain_name}-rewrite"
+  function_name = "${replace(var.domain_name,".","-")}-rewrite"
   description   = "Rewrite client-side routes for static content"
   handler = "rewrite.handler"
   runtime = "nodejs16.x"
 
-  source_path = "rewrite-handler"
+  source_path = "${path.module}/rewrite-handler"
 
   lambda_at_edge = true
 }

@@ -81,11 +81,11 @@ resource "aws_cloudfront_distribution" "web" {
             }
         }
 
-        #lambda_function_association {
-        #    event_type   = "viewer-request"
-        #    lambda_arn   = module.lambda_error_rewrite.lambda_function_qualified_arn
-        #    include_body = false
-        #}
+        lambda_function_association {
+            event_type   = "viewer-request"
+            lambda_arn   = module.lambda_rewrite.lambda_function_qualified_arn
+            include_body = false
+        }
     }
 
     # Data cache behavior
