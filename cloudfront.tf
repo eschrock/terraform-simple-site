@@ -34,6 +34,22 @@ resource "aws_cloudfront_distribution" "web" {
         }
     }
 
+    # API origin
+    dynamic "origin" {
+        for_each = var.api_lambda_arn != null ? [1] : []
+        content {
+            domain_name = replace(module.api_gateway.default_apigatewayv2_stage_invoke_url, "/^https?://([^/]*).*/", "$1")
+            origin_id   = "api"
+
+            custom_origin_config {
+                http_port              = 80
+                https_port             = 443
+                origin_protocol_policy = "https-only"
+                origin_ssl_protocols   = ["TLSv1.2"]
+            }
+        }
+    }
+
     logging_config {
         include_cookies = false
         bucket          = aws_s3_bucket.logs.bucket_domain_name
@@ -111,6 +127,30 @@ resource "aws_cloudfront_distribution" "web" {
                     forward = "none"
                 }
             }
+        }
+    }
+
+    # API cache behavior
+    dynamic "ordered_cache_behavior" {
+        for_each = var.api_lambda_arn != null ? [1] : []
+        content {
+            path_pattern     = "/api/*"
+            allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+            cached_methods   = ["GET", "HEAD"]
+            target_origin_id = "api"
+
+            default_ttl = 0
+            min_ttl     = 0
+            max_ttl     = 0
+
+            forwarded_values {
+                query_string = true
+                cookies {
+                    forward = "all"
+                }
+            }
+
+            viewer_protocol_policy = "redirect-to-https"
         }
     }
 }

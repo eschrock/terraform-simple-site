@@ -14,8 +14,8 @@ variable "enable_data" {
     default     = false
 }
 
-variable "api_gateway" {
-    description = "Create a separate data bucket and route /data requests to it"
-    type        = bool
-    default     = false
+variable "api_lambda_arn" {
+    description = "If set, create an api gateway and route /api requests to it"
+    type        = string
+    default     = null
 }
