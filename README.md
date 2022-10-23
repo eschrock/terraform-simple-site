@@ -2,11 +2,24 @@
 
 This module provisions a basic set of AWS infrastructure for managing a website. It is not intended
 to be general purpose, but is something I've done enough times to warrant creating a reusable
-module. It will provision the following:
+module. It will take the following:
 
- * An S3 bucket for site assets (`<domain>-web-site`)
- * An S3 bucket for site logs (`<domain>-web-logs`)
- * An S3 bucket for site data (`<domain>-web-data`)
+ * A Route53 zone (required)
+ * A domain name (required)
+ * A flag for creating static site assets bucket (optional)
+ * An API gateway for dynamic APIs (optional)
+ * A flag for creating a separate data assets bucket (optional)
+
+It will then configure:
+
+ * A S3 bucket for web logs
  * DNS records and SSL certificates for the domain, given an existing Route53 zone
  * A cloudfront distribution with:
-     *  
+     * `/api` pointing to an API gateway (if provided)
+     * `/data` pointing to a separate S3 bucket (if provided)
+     * `/` pointing to the site asset bucket (if provided)
+ * A rewrite handler to for single page apps to forward anything without a '.' to `index.html`
+
+ ## Inputs
+
+  * 
