@@ -14,8 +14,15 @@ variable "enable_data" {
     default     = false
 }
 
+variable "enable_api" {
+    description = "Create an api gateway and route /api requests to it"
+    type        = bool
+    default     = false
+}
+
+
 variable "api_lambda_arn" {
-    description = "If set, create an api gateway and route /api requests to it"
+    description = "Required if enable_api = true. Route /api requests to this lambda"
     type        = string
     default     = null
 }

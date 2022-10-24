@@ -9,3 +9,7 @@ output "s3_bucket_site" {
 output "s3_bucket_data" {
   value = var.enable_data ? aws_s3_bucket.data[0].bucket : null
 }
+
+output "api_gateway_arn" {
+  value = var.api_lambda_arn ? module.api_gateway[0].apigatewayv2_api_execution_arn : null
+}

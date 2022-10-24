@@ -3,7 +3,7 @@
 # this is just s simple
 
 module "api_log_group" {
-  count = var.api_lambda_arn != null ? 1 : 0
+  count = var.enable_api ? 1 : 0
   source  = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
   version = "~> 3.0"
 
@@ -12,7 +12,7 @@ module "api_log_group" {
 }
 
 module "api_gateway" {
-  count = var.api_lambda_arn != null ? 1 : 0
+  count = var.enable_api ? 1 : 0
   source = "terraform-aws-modules/apigateway-v2/aws"
 
   name                    = "${var.domain_name}-api"

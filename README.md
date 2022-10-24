@@ -26,3 +26,4 @@ It will then configure:
   * `zone_id` - Required. Route53 zone ID within which to create DNS records
   * `enable_data` - If set to true, then create a separate S3 bucket and map /data ot it
   * `enable_api` - If set to true, then create an HTTP API gateway mapped to /api
+  * `api_lambda_arg` - Required if `enable_api` is set, indicates the lambda to use for all requests
