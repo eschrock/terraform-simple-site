@@ -11,5 +11,5 @@ output "s3_bucket_data" {
 }
 
 output "api_gateway_arn" {
-  value = var.api_lambda_arn ? module.api_gateway[0].apigatewayv2_api_execution_arn : null
+  value = var.enable_api ? module.api_gateway[0].apigatewayv2_api_execution_arn : null
 }

@@ -36,9 +36,9 @@ resource "aws_cloudfront_distribution" "web" {
 
     # API origin
     dynamic "origin" {
-        for_each = var.api_lambda_arn != null ? [1] : []
+        for_each = var.enable_api ? [1] : []
         content {
-            domain_name = replace(module.api_gateway.default_apigatewayv2_stage_invoke_url, "/^https?://([^/]*).*/", "$1")
+            domain_name = replace(module.api_gateway[0].default_apigatewayv2_stage_invoke_url, "/^https?://([^/]*).*/", "$1")
             origin_id   = "api"
 
             custom_origin_config {
@@ -132,7 +132,7 @@ resource "aws_cloudfront_distribution" "web" {
 
     # API cache behavior
     dynamic "ordered_cache_behavior" {
-        for_each = var.api_lambda_arn != null ? [1] : []
+        for_each = var.enable_api ? [1] : []
         content {
             path_pattern     = "/api/*"
             allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
