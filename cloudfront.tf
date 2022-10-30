@@ -6,19 +6,12 @@
 #   /       Points to site assets (enable_site = true)
 #
 
-resource "aws_cloudfront_origin_access_identity" "web" {
-    comment = var.domain_name
-}
-
 resource "aws_cloudfront_distribution" "web" {
     # Static site origin
     origin {
         domain_name = aws_s3_bucket.site.bucket_regional_domain_name
         origin_id   = "site"
-
-        s3_origin_config {
-            origin_access_identity = aws_cloudfront_origin_access_identity.web.cloudfront_access_identity_path
-        }
+        origin_access_control_id = aws_cloudfront_origin_access_control.site.id
     }
 
     # Data origin
@@ -27,10 +20,7 @@ resource "aws_cloudfront_distribution" "web" {
         content {
             domain_name = aws_s3_bucket.data[0].bucket_regional_domain_name
             origin_id   = "data"
-
-            s3_origin_config {
-                origin_access_identity = aws_cloudfront_origin_access_identity.web.cloudfront_access_identity_path
-            }
+            origin_access_control_id = aws_cloudfront_origin_access_control.data[0].id
         }
     }
 
@@ -156,16 +146,30 @@ resource "aws_cloudfront_distribution" "web" {
 }
 
 # Site access
-data "aws_iam_policy_document" "site" {
-    statement {
-        actions   = [ "s3:GetObject" ]
-        resources = [ "${aws_s3_bucket.site.arn}/*" ]
+resource "aws_cloudfront_origin_access_control" "site" {
+    name                              = "${var.domain_name}-site"
+    description                       = "Site data access control"
+    origin_access_control_origin_type = "s3"
+    signing_behavior                  = "always"
+    signing_protocol                  = "sigv4"
+}
 
-        principals {
-            type        = "AWS"
-            identifiers = [ aws_cloudfront_origin_access_identity.web.iam_arn ]
-        }
-    }
+data "aws_iam_policy_document" "site" {
+	statement {
+		actions = ["s3:GetObject"]
+
+		resources = ["${aws_s3_bucket.site.arn}/*"]
+
+		principals {
+			type        = "Service"
+			identifiers = ["cloudfront.amazonaws.com"]
+		}
+		condition {
+			test     = "StringEquals"
+			variable = "AWS:SourceArn"
+			values   = [aws_cloudfront_distribution.web.arn]
+		}
+	}
 }
 
 resource "aws_s3_bucket_policy" "site" {
@@ -174,22 +178,37 @@ resource "aws_s3_bucket_policy" "site" {
 }
 
 
-# Data access
-data "aws_iam_policy_document" "data" {
-    count = var.enable_data ? 1 : 0
-    statement {
-        actions   = [ "s3:GetObject" ]
-        resources = [ "${aws_s3_bucket.data[count.index].arn}/*" ]
-
-        principals {
-            type        = "AWS"
-            identifiers = [ aws_cloudfront_origin_access_identity.web.iam_arn ]
-        }
-    }
+resource "aws_cloudfront_origin_access_control" "data" {
+    count                             = var.enable_data ? 1 : 0
+    name                              = "${var.domain_name}-data"
+    description                       = "Data access control"
+    origin_access_control_origin_type = "s3"
+    signing_behavior                  = "always"
+    signing_protocol                  = "sigv4"
 }
 
-resource "aws_s3_bucket_policy" "data" {
+data "aws_iam_policy_document" "data" {
     count = var.enable_data ? 1 : 0
+	statement {
+		actions = ["s3:GetObject"]
+
+		resources = ["${aws_s3_bucket.data[count.index].arn}/*"]
+
+		principals {
+			type        = "Service"
+			identifiers = ["cloudfront.amazonaws.com"]
+		}
+		condition {
+			test     = "StringEquals"
+			variable = "AWS:SourceArn"
+			values   = [aws_cloudfront_distribution.web.arn]
+		}
+	}
+}
+
+
+resource "aws_s3_bucket_policy" "data" {
+    count  = var.enable_data ? 1 : 0
     bucket = aws_s3_bucket.data[count.index].id
     policy = data.aws_iam_policy_document.data[count.index].json
 }

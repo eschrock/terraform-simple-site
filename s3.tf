@@ -107,3 +107,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "data" {
         }
     }
 }
+
+resource "aws_s3_bucket_website_configuration" "data" {
+    count   = var.enable_data ? 1 : 0
+    bucket  = aws_s3_bucket.data[count.index].bucket
+
+    index_document {
+        suffix = "index.html"
+    }
+
+    error_document {
+        key = "error.html"
+    }
+}
