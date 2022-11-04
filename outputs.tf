@@ -13,3 +13,7 @@ output "s3_bucket_data" {
 output "api_gateway_arn" {
   value = var.enable_api ? module.api_gateway[0].apigatewayv2_api_execution_arn : null
 }
+
+output "acm_certificate_arn" {
+  value = aws_acm_certificate.web.arn
+}
