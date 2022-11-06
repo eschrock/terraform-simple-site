@@ -21,10 +21,26 @@ module "api_gateway" {
   create_api_domain_name  = false
 
   integrations = {
-    "$default" = {
+    "ANY ${var.unauth_route}" = {
       lambda_arn = var.api_lambda_arn
     }
+
+    "$default" = {
+      lambda_arn = var.api_lambda_arn
+      authorizer_key = var.enable_auth ? "jwt" : null
+      authorization_type = var.enable_auth ? "JWT" : "NONE"
+    }
   }
+
+  authorizers = var.enable_auth ? {
+    "jwt" = {
+      authorizer_type   = "JWT"
+      identity_sources  = "$request.header.Authorization"
+      name              = "jwt-auth"
+      audience          = [ var.jwt_audience ]
+      issuer            = var.jwt_issuer
+    }
+  } : {}
 
   tags = {
     Name = "${var.domain_name}-api"

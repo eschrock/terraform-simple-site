@@ -20,9 +20,32 @@ variable "enable_api" {
     default     = false
 }
 
-
 variable "api_lambda_arn" {
     description = "Required if enable_api = true. Route /api requests to this lambda"
     type        = string
     default     = null
+}
+
+variable "enable_auth" {
+    description = "Enable JWT authentication by default. jwt_audience and jwt_issuer must be set"
+    type        = bool
+    default     = false
+}
+
+variable "jwt_audience" {
+    description = "JWT audience configuration. Required if enable_auth is set to true"
+    type        = string
+    default     = null
+}
+
+variable "jwt_issuer" {
+    description = "JWT issuer configuration. Required if enable_auth is set to true"
+    type        = string
+    default     = null
+}
+
+variable "unauth_route" {
+    description = "optional route to bypass authentication when enable_auth is true"
+    type        = string
+    default     = "/dev/null"
 }
